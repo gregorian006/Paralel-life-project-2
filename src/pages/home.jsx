@@ -1,9 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Particles, { initParticlesEngine } from "@tsparticles/react";
 import { loadSlim } from "@tsparticles/slim"; 
+import { useNavigate } from 'react-router-dom';
 
-// --- 1. HERO SECTION (Bagian Atas + Bintang) ---
-function HeroSection() {
+// PENTING: Jangan lupa import Navbar-nya ya Lek!
+// Sesuaikan path '../components/Navbar' dengan lokasi file Navbar kamu sebenarnya.
+import Navbar from '../components/Navbar'; 
+
+// --- 1. HERO SECTION (Diupdate menerima prop 'onStart') ---
+function HeroSection({ onStart }) {
   const [init, setInit] = useState(false);
 
   useEffect(() => {
@@ -54,7 +59,9 @@ function HeroSection() {
       {init && (
         <Particles id="tsparticles" options={particlesOptions} className="absolute inset-0 z-0" />
       )}
-      <div className="relative z-10 text-center max-w-3xl space-y-6">
+      <div className="relative z-10 text-center max-w-3xl space-y-6 mt-16"> 
+        {/* Note: Saya tambah mt-16 biar gak ketutupan Navbar */}
+        
         <span className="inline-block px-4 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-sm font-medium text-white shadow-[0_0_15px_rgba(168,85,247,0.5)]">
           Powered by Advanced AI
         </span>
@@ -66,10 +73,16 @@ function HeroSection() {
           Pernahkah Anda bertanya-tanya "bagaimana jika saya memilih jalan yang berbeda?" Dengan teknologi AI canggih, kami membantu Anda menjelajahi kemungkinan hidup yang tidak Anda ambil.
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-          <button className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg hover:from-purple-700 hover:to-pink-600 hover:shadow-purple-500/30 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-105">
+          
+          {/* TOMBOL UPDATE: Panggil onStart saat diklik */}
+          <button 
+            onClick={onStart}
+            className="px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-semibold shadow-lg hover:from-purple-700 hover:to-pink-600 hover:shadow-purple-500/30 transition-all duration-300 flex items-center justify-center gap-2 transform hover:scale-105"
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             Mulai Eksplorasi
           </button>
+
           <button className="px-8 py-3 rounded-full border border-gray-500 text-gray-300 font-semibold hover:bg-white/10 hover:border-white hover:text-white transition-all duration-300 backdrop-blur-sm">
             Pelajari Lebih Lanjut
           </button>
@@ -79,7 +92,7 @@ function HeroSection() {
   );
 }
 
-// --- 2. FEATURE SECTION (Bagian Kotak-Kotak) ---
+// --- 2. FEATURE SECTION (Tidak ada perubahan logic, cuma visual) ---
 function FeatureSection() {
   const features = [
     {
@@ -153,14 +166,12 @@ function FeatureSection() {
   );
 }
 
-// --- 3. CTA SECTION (Bagian Bawah Ungu) ---
-function CTASection() {
+// --- 3. CTA SECTION (Diupdate menerima prop 'onStart') ---
+function CTASection({ onStart }) {
   return (
     <div className="relative py-24 px-6 md:px-20">
-      {/* Background gradient box */}
       <div className="max-w-6xl mx-auto rounded-3xl p-12 md:p-16 relative overflow-hidden bg-gradient-to-r from-purple-900 to-indigo-900 border border-white/10 text-center">
         
-        {/* Dekorasi lingkaran kecil di background */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-10 left-10 w-4 h-4 bg-purple-400 rounded-full opacity-50 animate-pulse"></div>
           <div className="absolute bottom-10 right-20 w-6 h-6 bg-pink-400 rounded-full opacity-30 animate-bounce"></div>
@@ -172,7 +183,11 @@ function CTASection() {
           <p className="text-gray-300 mb-8 max-w-2xl mx-auto text-lg">
             Temukan kemungkinan-kemungkinan yang menanti di jalan yang tidak Anda pilih. Mulai eksplorasi Anda sekarang dan dapatkan insight yang mengubah perspektif.
           </p>
-          <button className="px-10 py-4 rounded-full bg-white text-purple-900 font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl transform hover:-translate-y-1">
+          {/* TOMBOL UPDATE: Panggil onStart saat diklik */}
+          <button 
+            onClick={onStart}
+            className="px-10 py-4 rounded-full bg-white text-purple-900 font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl transform hover:-translate-y-1"
+          >
             Mulai Sekarang
           </button>
         </div>
@@ -182,14 +197,34 @@ function CTASection() {
 }
 
 // --- KOMPONEN UTAMA HOME ---
-function Home() {
+// Menerima prop 'isLoggedIn' dari App.jsx
+function Home({ isLoggedIn }) {
+  const navigate = useNavigate();
+
+  // Logika pengecekan Login
+  const handleExploration = () => {
+    if (isLoggedIn) {
+      navigate('/chat');
+    } else {
+      navigate('/login');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#0f0c29] text-white font-sans">
-      <HeroSection />
-      <FeatureSection />
-      <CTASection />
+    <div className="min-h-screen bg-[#0f0c29] text-white font-sans relative">
+      {/* Navbar dipanggil di sini.
+        Kita oper isLoggedIn ke Navbar kalau misalnya Navbar butuh data itu (misal buat ganti tombol jadi 'Logout' atau tampilkan avatar)
+      */}
+      <Navbar isLoggedIn={isLoggedIn} />
+
+      {/* Oper fungsi handleExploration ke tombol di Hero */}
+      <HeroSection onStart={handleExploration} />
       
-      {/* Footer Simpel */}
+      <FeatureSection />
+      
+      {/* Oper fungsi handleExploration ke tombol di CTA Bawah juga biar konsisten */}
+      <CTASection onStart={handleExploration} />
+      
       <footer className="py-8 text-center text-gray-500 text-sm border-t border-white/5">
         © 2025 Paralel Life. All rights reserved.
       </footer>

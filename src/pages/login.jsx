@@ -1,37 +1,67 @@
+// src/pages/login.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-function Login() {
+// Terima prop onLogin biar App.jsx tau kalo user dah login (Opsional tapi recommended)
+function Login({ onLogin }) {
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Jika sudah login → tidak boleh buka halaman login
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) navigate("/ai");
+    const user = localStorage.getItem("user"); // Cek session aktif
+    if (user) navigate("/chat"); // Redirect ke Chat, bukan AI (sesuai request sebelumnya)
   }, [navigate]);
 
   const handleLogin = (e) => {
     e.preventDefault();
+    setErrorMsg("");
+    setLoading(true);
 
     if (!email || !password) {
-      setErrorMsg("Email dan password wajib diisi.");
+      setErrorMsg("Email dan password wajib diisi, Lek.");
+      setLoading(false);
       return;
     }
 
-    // Simpan ke localStorage
-    const userData = {
-      email,
-      loginTime: new Date().toISOString(),
-    };
+    setTimeout(() => {
+      // 1. Ambil database user
+      const usersDb = JSON.parse(localStorage.getItem("users_db") || "[]");
 
-    localStorage.setItem("user", JSON.stringify(userData));
+      // 2. LOGIKA PENCARIAN (Authentication)
+      // Cari user yang email DAN password-nya cocok
+      const validUser = usersDb.find(
+        (u) => u.email === email && u.password === password
+      );
 
-    // Redirect
-    navigate("/");
+      if (validUser) {
+        // --- SUKSES LOGIN ---
+        
+        // Simpan sesi aktif ke localStorage
+        // Kita simpan objek lengkap biar nama user bisa dipanggil nanti
+        const sessionData = {
+            ...validUser,
+            loginTime: new Date().toISOString()
+        };
+        
+        localStorage.setItem("user", JSON.stringify(sessionData));
+
+        // Trigger update state di App.jsx (kalau props onLogin dipasang)
+        if (onLogin) onLogin();
+
+        // Redirect ke halaman Chat
+        navigate("/chat");
+      } else {
+        // --- GAGAL LOGIN ---
+        setErrorMsg("Email atau Password salah! Cek lagi database-mu Lek.");
+      }
+      
+      setLoading(false);
+    }, 1000); // Simulasi loading 1 detik
   };
 
   return (
@@ -75,16 +105,19 @@ function Login() {
           </div>
 
           {errorMsg && (
-            <p className="text-red-400 text-sm text-center">{errorMsg}</p>
+            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/50">
+                <p className="text-red-400 text-sm text-center">{errorMsg}</p>
+            </div>
           )}
 
           <button
             type="submit"
+            disabled={loading}
             className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white 
             font-semibold rounded-xl shadow-lg hover:from-purple-700 hover:to-pink-600 
-            transition transform hover:scale-[1.02]"
+            transition transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Memverifikasi..." : "Login"}
           </button>
 
           <p className="text-center text-gray-400 text-sm mt-3">

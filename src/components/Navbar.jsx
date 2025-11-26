@@ -50,7 +50,7 @@ const Navbar = () => {
               ))}
               {/* Tombol Login/Register Khusus */}
               <button className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-5 py-2 rounded-full font-medium hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-300 text-sm">
-                Mulai Sekarang
+                Log in Sekarang
               </button>
             </div>
           </div>
